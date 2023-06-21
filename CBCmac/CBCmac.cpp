@@ -1,237 +1,275 @@
-#include "Header.h";
+#include "Header.h"
 
-int cbcmac() {
+int mac_cbc() {
 
-	/*
-	Ініціалізація змінних
-	*/
-	HCRYPTPROV hProv = NULL;
-	LPTSTR      pszName = NULL;
+    /*
+    Р†РЅС–С†С–Р°Р»С–Р·Р°С†С–СЏ Р·РјС–РЅРЅРёС…
+    */
+    HCRYPTPROV  hProv = NULL;
+    HCRYPTHASH  hHash = NULL;
+    HCRYPTKEY   hKey = NULL;
+    PBYTE       pbHash = NULL;
+    DWORD       dwDataLen = 0;
+    HCRYPTHASH  hHmacHash = NULL;
+    BYTE        Data2[] = { 0x6D,0x65,0x73,0x73,0x61,0x67,0x65 };
+    HMAC_INFO   HmacInfo;
 
-	/*
-	Підключення до криптопровайдера
-	*/
-	if (!CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, 0) &&
-		!CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET))
-	{
-		puts("NO create keyset\n");
-		return 1; 
-	}
-	else
-	{
-		puts("YES, create keyset\n");
-	}
+    /*
+    РџС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ РєСЂРёРїС‚РѕРїСЂРѕРІР°Р№РґРµСЂР°
+    */
+    if (!CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, 0) &&
+        !CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET))
+    {
+        puts("NO create keyset\n");
+        return -1;
+    }
+    else
+    {
+        puts("YES, create keyset\n");
+    }
 
-	/*
-	Відкриття власного сховища сертифікатів
-	*/
-	HCERTSTORE hStoreHandle;
-	HCERTSTORE hStore;
-	if (!(hStore = CertOpenStore(
-		CERT_STORE_PROV_SYSTEM,
-		0,
-		NULL,
-		CERT_SYSTEM_STORE_CURRENT_USER,
-		CERT_STORE_NAME)))
-	{
-		printf("Нельзя открыть хранилище MY ");
-	}
-	else
-	{
-		printf("Open MY\n");
-	}
+    /*
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ С„Р°Р№Р»С–РІ
+    */
+    FILE* password, * out, * in, * inkey, * key_lenght;
+    DWORD dwBlobLenght = 0;
+    DWORD dwBlobLenght1 = 0;
 
-	/*
-	Отримання вказівника на мій сертифікат
-	*/
-	PCCERT_CONTEXT pSignerCert = 0;
-	if (pSignerCert = CertFindCertificateInStore(
-		hStore,
-		MY_TYPE,
-		0,
-		CERT_FIND_SUBJECT_STR,
-		SIGNER_NAME,
-		NULL))
-	{
-		printf("Certificate was found !!!!!\n");
-	}
-	else
-	{
-		printf("Certificate was NOT found!!!\n.");
-	}
+    if ((password = fopen("password.txt", "rb")) == NULL) {
+        exit(1);
+    }
+    if ((in = fopen("Crypto.txt", "rb")) == NULL) {
+        exit(1);
+    }
+    if ((out = fopen("CBC_MAC_3DES.txt", "wb")) == NULL) {
+        exit(1);
+    }
 
-	/*
-	Імпорт "public key" для наступної верифікації підпису або шифрування сесійного ключа
-	*/
-	HCRYPTKEY hPublicKey;
-	if (CryptImportPublicKeyInfo(
-		hProv,
-		MY_TYPE,
-		&(pSignerCert->pCertInfo->SubjectPublicKeyInfo),
-		&hPublicKey))
-	{
-		printf("Import public key.\n");
-	}
-	else
-	{
-		printf("Ошибка CryptAcquireContext.");
-	}
+    fseek(password, 0, SEEK_END);
+    dwBlobLenght = ftell(password);
+    fseek(password, 0, SEEK_SET);
 
-	HCRYPTKEY hSessionKey;
+    BYTE* read = new BYTE[dwBlobLenght];
+    fread(read, sizeof byte, dwBlobLenght, password);
 
-	/*
-	Генерація сесійного ключа. Мій ключ - 3DES. Режим - СВС
-	*/
-	if (!CryptGenKey(hProv, CALG_3DES_112,
-		CRYPT_ENCRYPT | CRYPT_DECRYPT, &hSessionKey))
-	{
-		printf("Error CryptGenKey");
-		return 1;
-	}
+    HCERTSTORE hStore;
 
-	std::cout << "Session key generated" << std::endl;
+    /*
+    Р’С–РґРєСЂРёС‚С‚СЏ РІР»Р°СЃРЅРѕРіРѕ СЃС…РѕРІРёС‰Р° СЃРµСЂС‚РёС„С–РєР°С‚С–РІ
+   */
+    if (!(hStore = CertOpenStore(
+        CERT_STORE_PROV_SYSTEM,
+        0,
+        NULL,
+        CERT_SYSTEM_STORE_CURRENT_USER,
+        //CERT_SYSTEM_STORE_LOCAL_MACHINE,
+        CERT_STORE_NAME)))
+    {
+        printf("Not open MY.");
+    }
+    else
+    {
+        printf("Open MY\n");
+    }
 
-	/*
-	Встановлення режиму шифрування повідомлення - СВС
-	*/
-	DWORD dwMode = CRYPT_MODE_CBC;
-	if (!CryptSetKeyParam(hSessionKey, KP_MODE, (BYTE*)&dwMode, 0))
-	{
-		puts("Error CryptSetKeyParam!\n");
-		return -1;
-	}
+    /*
+    РћС‚СЂРёРјР°РЅРЅСЏ РІРєР°Р·С–РІРЅРёРєР° РЅР° РјС–Р№ СЃРµСЂС‚РёС„С–РєР°С‚
+    */
+    PCCERT_CONTEXT pSignerCert = 0;
+    if (pSignerCert = CertFindCertificateInStore(
+        hStore,
+        MY_TYPE,
+        0,
+        CERT_FIND_SUBJECT_STR,
+        SIGNER_NAME,
+        NULL))
+    {
+        printf("Certificate was found !\n");
+    }
+    else
+    {
+        printf("Certificate was NOT found!!!\n.");
+    }
 
-	/*
-	Зчитування та запис у файли
-	*/
-	FILE* in, * cbcMacSessionKey, * cbcMAC;
-	if ((in = fopen("Crypto.txt", "rb")) == NULL) {
-		exit(1);
-	}
-	if ((cbcMAC = fopen("CBC_MAC_3DES.txt", "wb")) == NULL) {
-		exit(1);
-	}
-	if ((cbcMacSessionKey = fopen("CBC_MAC_3DES session key.txt", "wb")) == NULL) {
-		exit(1);
-	}
+    /*
+    Р†РјРїРѕСЂС‚ "public key" РґР»СЏ РЅР°СЃС‚СѓРїРЅРѕС— РІРµСЂРёС„С–РєР°С†С–С— РїС–РґРїРёСЃСѓ Р°Р±Рѕ С€РёС„СЂСѓРІР°РЅРЅСЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
+    */
+    HCRYPTKEY hPublicKey;
+    if (CryptImportPublicKeyInfo(
+        hProv,
+        MY_TYPE,
+        &(pSignerCert->pCertInfo->SubjectPublicKeyInfo),
+        &hPublicKey))
+    {
+        printf("Import public key.\n");
+    }
+    else
+    {
+        printf("РћС€РёР±РєР° CryptAcquireContext.");
+    }
 
-	BYTE* pCryptBuf = 0;
-	DWORD   buflen;
-	BOOL      bRes;
-	DWORD    datalen;
+    HCRYPTKEY hSessionKey;
 
-	/*
-	Визначення розміра необхідного буфера
-	*/
-	buflen = BLOCK_SIZE;
-	if (!CryptEncrypt(hSessionKey, 0, TRUE, 0, NULL, &buflen, 0))
-	{
-		cout << "Crypt Encrypt(bufSize) failed." << endl;
-		getchar();
-		return -1;
-	}
+    /*
+    Р“РµРЅРµСЂР°С†С–СЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°. РњС–Р№ РєР»СЋС‡ - 3DES. Р РµР¶РёРј - РЎР’РЎ
+    */
+    if (!CryptGenKey(hProv, CALG_3DES_112,
+        CRYPT_ENCRYPT | CRYPT_DECRYPT, &hSessionKey))
+    {
+        printf("Error CryptGenKey");
+        return -1;
+    }
 
-	/*
-	Видідення пам'яті під буфер
-	*/
-	pCryptBuf = (BYTE*)malloc(buflen);
-	int t = 0;
+    std::cout << "Session key generated" << std::endl;
 
-	/*
-	Шифрування фaйлу "in"
-	*/
-	while ((t = fread(pCryptBuf, sizeof byte, BLOCK_SIZE, in)))
-	{
-		datalen = t;
-		bRes = CryptEncrypt(hSessionKey, 0, TRUE, 0, pCryptBuf, &datalen, buflen);
+    /*
+    Р’СЃС‚Р°РЅРѕРІР»РµРЅРЅСЏ СЂРµР¶РёРјСѓ С€РёС„СЂСѓРІР°РЅРЅСЏ РїРѕРІС–РґРѕРјР»РµРЅРЅСЏ - РЎР’РЎ
+    */
+    DWORD dwMode = CRYPT_MODE_CBC;
+    if (!CryptSetKeyParam(hSessionKey, KP_MODE, (BYTE*)&dwMode, 0))
+    {
+        puts("Error CryptSetKeyParam!\n");
+        return -1;
+    }
 
-		if (!bRes) {
-			cout << "CryptEncrypt (encryption) failed, " << endl;
-			getchar();
-			return -1;
-		}
-	}
-	cout << "File encryption completed successfully" << endl;
+    BYTE* pCryptBuf = 0;
+    DWORD   buflen;
+    BOOL      bRes;
+    DWORD    datalen;
 
-	fwrite(pCryptBuf, sizeof byte, datalen, cbcMAC);
+    /*
+    Р’РёР·РЅР°С‡РµРЅРЅСЏ СЂРѕР·РјС–СЂР° РЅРµРѕР±С…С–РґРЅРѕРіРѕ Р±СѓС„РµСЂР°
+    */
+    buflen = BLOCK_SIZE;
+    if (!CryptEncrypt(hSessionKey, 0, TRUE, 0, NULL, &buflen, 0))
+    {
+        cout << " Crypt Encrypt (bufSize) failed." << endl;
+        getchar();
+        return -1;
+    }
 
-	/*
-	Визначаємо розмір Bloba сесійного ключа
-	*/
-	DWORD dwBlobLenght = 0;
-	if (CryptExportKey(hSessionKey, hPublicKey, SIMPLEBLOB, 0, 0, &dwBlobLenght))
-	{
-		printf("size of the Blob\n");
-	}
-	else
-	{
-		printf("error computing Blob length\n");
-		getchar();
-		return -1;
-	}
-	
-	/*
-	Розподіляємо пам'ять для сесійного ключа
-	*/
-	BYTE* ppbKeyBlob;
-	ppbKeyBlob = NULL;
-	if (ppbKeyBlob = (LPBYTE)malloc(dwBlobLenght))
-	{
-		printf("memory has been allocated for the Blob\n");
-	}
-	else
-	{
-		printf("Error memory for key length!!!\n");
-		getchar();
-		return -1;
-	}
+    /*
+    Р’РёРґС–РґРµРЅРЅСЏ РїР°Рј'СЏС‚С– РїС–Рґ Р±СѓС„РµСЂ
+    */
+    pCryptBuf = (BYTE*)malloc(buflen);
+    int t = 0;
 
-	/*
-	Зашифруємо сесійний ключ hKey відкритим ключем hPublicKey
-	*/
-	if (CryptExportKey(hSessionKey, hPublicKey, SIMPLEBLOB, 0, ppbKeyBlob, &dwBlobLenght))
-	{
-		printf("contents have been written to the Blob\n");
-	}
-	else
-	{
-		printf("Could not get exporting key.\n");
-		free(ppbKeyBlob);
-		ppbKeyBlob = NULL;
-		getchar();
-		return -1;
-	}
+    /*
+    РЁРёС„СЂСѓРІР°РЅРЅСЏ С„aР№Р»Сѓ "in"
+    */
+    while ((t = fread(pCryptBuf, sizeof byte, BLOCK_SIZE, in)))
+    {
+        datalen = t;
+        bRes = CryptEncrypt(hSessionKey, 0, TRUE, 0, pCryptBuf, &datalen, buflen);
+        if (!bRes) {
+            cout << "CryptEncrypt (encryption) failed, " << endl;
+            getchar(); 
+            return -1;
+        }
+    }
 
-	/*
-	Запис hSessionKey
-	*/
-	if (fwrite(ppbKeyBlob, sizeof byte, dwBlobLenght, cbcMacSessionKey))
-	{
-		printf("the session key has been written to the file\n");
-		free(ppbKeyBlob);
-	}
-	else
-	{
-		printf("the session key could not be written to the file\n");
-		getchar();
-		return -1;
-	}
+    cout << "MAC CBC: ";
+    for (DWORD i = 0; i < buflen; i++) printf("%2.2x ", pCryptBuf[i]);
+    cout << endl;
 
-	//Закриття потоків
-	fclose(in);
-	fclose(cbcMAC);
-	fclose(cbcMacSessionKey);
-	//Очистка буфера
-	free(pCryptBuf);
+    // Print the hash to the file.
+    if (fwrite(pCryptBuf, sizeof(char), buflen, out))
+    {
+        printf("the hash has been written to the file\n");
+    }
 
-	/*
-	Звільнення контексту локальних змінних
-	*/
-	CryptDestroyKey(hSessionKey);
-	CryptReleaseContext(hProv, 0);
+    if ((inkey = fopen("inkey.txt", "wb")) == NULL) {
+            exit(1);
+    }
 
-	// Для зупинки
-	_getch();
+    /*
+    Р’РёР·РЅР°С‡Р°С”РјРѕ СЂРѕР·РјС–СЂ Bloba СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
+    */
+    dwBlobLenght = 0;
+    if (CryptExportKey(hSessionKey, hPublicKey, SIMPLEBLOB, 0, 0, &dwBlobLenght))
+    {
+        printf("size of the Blob");
+    }
+    else
+    {
+        printf("error computing Blob length");
+        getchar();
+        return -1;
+    }
+    
+    /*
+    Р РѕР·РїРѕРґС–Р»СЏС”РјРѕ РїР°Рј'СЏС‚СЊ РґР»СЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
+    */
+    BYTE* ppbKeyBlob;
+    ppbKeyBlob = NULL;
+    if (ppbKeyBlob = (LPBYTE)malloc(dwBlobLenght))
+    {
+        printf("memory has been allocated for the Blob");
+    }
+    else
+    {
+        printf("Error memory for key length!!!");
+        getchar();
+        return -1;
+    }
+    
+    /*
+    Р—Р°С€РёС„СЂСѓС”РјРѕ СЃРµСЃС–Р№РЅРёР№ РєР»СЋС‡ hKey РІС–РґРєСЂРёС‚РёРј РєР»СЋС‡РµРј hPublicKey
+    */
+    if (CryptExportKey(hSessionKey, hPublicKey, SIMPLEBLOB, 0, ppbKeyBlob, &dwBlobLenght))
+    {
+        printf("contents have been written to the Blob");
+    }
+    else
+    {
+        printf("Could not get exporting key.");
+        free(ppbKeyBlob);
+        ppbKeyBlob = NULL;
+        getchar();
+        return -1;
+    }
 
-	return 0;
+    /*
+    Р—Р°РїРёСЃ hSessionKey
+    */
+    if (fwrite(ppbKeyBlob, sizeof byte, dwBlobLenght, inkey))
+    {
+        printf("the session key has been written to the file\n");
+        free(ppbKeyBlob);
+    }
+    else
+    {
+        printf("the session key could not be written to the file\n");
+        getchar();
+        return -1;
+    }
+
+    fclose(inkey);
+
+    /*
+    Р—Р°РїРёСЃ hSessionKey Сѓ РЅРѕРІРёР№ С„Р°Р№Р»
+    */
+    if ((key_lenght = fopen("key_length.txt", "w")) == NULL) {//b-РїРѕР±РёС‚РѕРІРѕ
+        puts("Cannot open file key.");
+        exit(1);
+    }
+    fprintf(key_lenght, "%d\n", dwBlobLenght);
+    fclose(key_lenght);
+
+    fclose(in);
+    fclose(out);
+
+ErrorExit:
+    if (hHmacHash)
+        CryptDestroyHash(hHmacHash);
+    if (hKey)
+        CryptDestroyKey(hKey);
+    if (hHash)
+        CryptDestroyHash(hHash);
+    if (hProv)
+        CryptReleaseContext(hProv, 0);
+    if (pbHash)
+        free(pbHash);
+    if (hProv)
+        CryptReleaseContext(hProv, 0);
 }

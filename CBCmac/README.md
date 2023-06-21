@@ -1,4 +1,4 @@
-## 
+#Creation of the MAC-CBC algorithm
 
 _Implement message authentication based on the MAC-CBC algorithm using CryptoAPI._
 

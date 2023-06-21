@@ -32,7 +32,7 @@ int verify() {
 		printf("Open MY\n");
 	}
 
-	// Открываем хранилище сертификатов
+	// РћС‚РєСЂС‹РІР°РµРј С…СЂР°РЅРёР»РёС‰Рµ СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ
 	HCERTSTORE hStore;
 
 	if (!(hStore = CertOpenStore(
@@ -42,11 +42,11 @@ int verify() {
 		CERT_SYSTEM_STORE_CURRENT_USER,
 		CERT_STORE_NAME)))
 	{
-		printf("Нельзя открыть хранилище MY ");
+		printf("РќРµР»СЊР·СЏ РѕС‚РєСЂС‹С‚СЊ С…СЂР°РЅРёР»РёС‰Рµ MY ");
 
 	}
 
-	// Получаем указатель на наш сертификат
+	// РџРѕР»СѓС‡Р°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РЅР°С€ СЃРµСЂС‚РёС„РёРєР°С‚
 	PCCERT_CONTEXT pSignerCert = 0;
 
 	if (pSignerCert = CertFindCertificateInStore(
@@ -64,7 +64,7 @@ int verify() {
 		printf("Certificate was NOT found!!!\n.");
 	}
 
-	// Импортируем public key для последующей верификации подписи или шифрования сеансового ключа
+	// РРјРїРѕСЂС‚РёСЂСѓРµРј public key РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµР№ РІРµСЂРёС„РёРєР°С†РёРё РїРѕРґРїРёСЃРё РёР»Рё С€РёС„СЂРѕРІР°РЅРёСЏ СЃРµР°РЅСЃРѕРІРѕРіРѕ РєР»СЋС‡Р°
 	HCRYPTKEY hPublicKey;
 	if (CryptImportPublicKeyInfo(
 		hProv,
@@ -76,7 +76,7 @@ int verify() {
 	}
 	else
 	{
-		printf("Ошибка CryptAcquireContext.");
+		printf("РћС€РёР±РєР° CryptAcquireContext.");
 	}
 
 	FILE* signature, * in;
@@ -94,16 +94,16 @@ int verify() {
 	dwBlobLenght = ftell(in);
 	fseek(in, 0, SEEK_SET);
 
-	//открываем файл, содержимое которого подписываем и дальше создаем дайджест
+	//РѕС‚РєСЂС‹РІР°РµРј С„Р°Р№Р», СЃРѕРґРµСЂР¶РёРјРѕРµ РєРѕС‚РѕСЂРѕРіРѕ РїРѕРґРїРёСЃС‹РІР°РµРј Рё РґР°Р»СЊС€Рµ СЃРѕР·РґР°РµРј РґР°Р№РґР¶РµСЃС‚
 	HCRYPTHASH hHash;
-	//создаем хеш-объект
+	//СЃРѕР·РґР°РµРј С…РµС€-РѕР±СЉРµРєС‚
 	if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash))
 	{
 		cout << "CryptCreateHash";
 		return 1;
 	}
 
-	//чтение файла
+	//С‡С‚РµРЅРёРµ С„Р°Р№Р»Р°
 	BYTE* read = new BYTE[dwBlobLenght + 8];
 	if (fread(read, sizeof byte, dwBlobLenght, in))
 	{
@@ -114,14 +114,14 @@ int verify() {
 		printf("the file could not be read from the file\n");
 		return 1;
 	}
-	// Передача хешируемых данных хэш-объекту.
+	// РџРµСЂРµРґР°С‡Р° С…РµС€РёСЂСѓРµРјС‹С… РґР°РЅРЅС‹С… С…СЌС€-РѕР±СЉРµРєС‚Сѓ.
 	if (!CryptHashData(hHash, read, dwBlobLenght, 0))
 	{
 		cout << "CryptHashData";
 		return 1;
 	}
 	std::cout << "Hash data loaded" << std::endl;
-	// Получение хеш-значения
+	// РџРѕР»СѓС‡РµРЅРёРµ С…РµС€-Р·РЅР°С‡РµРЅРёСЏ
 	DWORD count = 0;
 	if (!CryptGetHashParam(hHash, HP_HASHVAL, NULL, &count, 0))
 	{
@@ -150,7 +150,7 @@ int verify() {
 	BYTE* read1 = new BYTE[dwSignLenght];
 	fread(read1, sizeof byte, dwSignLenght, signature);
 
-	//Перевірка цифрового підписа
+	//РџРµСЂРµРІС–СЂРєР° С†РёС„СЂРѕРІРѕРіРѕ РїС–РґРїРёСЃР°
 	BOOL result = CryptVerifySignatureW(hHash, read1, dwSignLenght, hPublicKey, NULL, 0);
 	std::cout << "Check is completed" << std::endl;
 	std::cout << "Check result:" << ((result) ? "Verified!" : "NOTverified!") << std::endl;

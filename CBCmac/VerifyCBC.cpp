@@ -12,7 +12,7 @@ int cbcvr() {
     HMAC_INFO   HmacInfo;
 
     /*
-    Підключення до криптопровайдера
+    РџС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ РєСЂРёРїС‚РѕРїСЂРѕРІР°Р№РґРµСЂР°
     */
     HCRYPTPROV hProv = NULL;
     if (!CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, 0) &&
@@ -27,7 +27,7 @@ int cbcvr() {
     }
 
     /*
-    Відкриття власного сховища сертифікатів
+    Р’С–РґРєСЂРёС‚С‚СЏ РІР»Р°СЃРЅРѕРіРѕ СЃС…РѕРІРёС‰Р° СЃРµСЂС‚РёС„С–РєР°С‚С–РІ
     */
     HCERTSTORE hStore;
     HCERTSTORE hStoreHandle;
@@ -37,10 +37,10 @@ int cbcvr() {
         0,
         NULL,
         CERT_SYSTEM_STORE_CURRENT_USER,
-        //CERT_SYSTEM_STORE_LOCAL_MACHINE, //якщо на локальній машині
+        //CERT_SYSTEM_STORE_LOCAL_MACHINE, //СЏРєС‰Рѕ РЅР° Р»РѕРєР°Р»СЊРЅС–Р№ РјР°С€РёРЅС–
         CERT_STORE_NAME)))
     {
-        printf("Неможливо відкрити сховище MY!");
+        printf("РќРµРјРѕР¶Р»РёРІРѕ РІС–РґРєСЂРёС‚Рё СЃС…РѕРІРёС‰Рµ MY!");
     }
 
     FILE* password, * in;
@@ -74,7 +74,7 @@ int cbcvr() {
     fread(pbHashCmp, sizeof byte, dwBlobLenght2, fhmac);
     bool ok = true;
 
-    // Получаем указатель на наш сертификат
+    // РџРѕР»СѓС‡Р°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РЅР°С€ СЃРµСЂС‚РёС„РёРєР°С‚
     PCCERT_CONTEXT pSignerCert = 0;
 
     if (pSignerCert = CertFindCertificateInStore(
@@ -95,7 +95,7 @@ int cbcvr() {
 
     HCRYPTKEY hPrivateKey = 0;
     DWORD keySpec = 0;
-    // Извлекаем из сертификата контекст приватного ключа   
+    // РР·РІР»РµРєР°РµРј РёР· СЃРµСЂС‚РёС„РёРєР°С‚Р° РєРѕРЅС‚РµРєСЃС‚ РїСЂРёРІР°С‚РЅРѕРіРѕ РєР»СЋС‡Р°   
     if (!CryptAcquireCertificatePrivateKey(
         pSignerCert,
         0,
@@ -109,7 +109,7 @@ int cbcvr() {
         return -1;
     }
 
-    //   Извлекаем закрытый ключ 
+    //   РР·РІР»РµРєР°РµРј Р·Р°РєСЂС‹С‚С‹Р№ РєР»СЋС‡ 
     if (!CryptGetUserKey(hProv, keySpec, &hPrivateKey))
     {
         cout << "Error getting private key\n";
@@ -131,7 +131,7 @@ int cbcvr() {
 
     fclose(key_lenght);
 
-    //Распределяем память для сессионного ключа
+    //Р Р°СЃРїСЂРµРґРµР»СЏРµРј РїР°РјСЏС‚СЊ РґР»СЏ СЃРµСЃСЃРёРѕРЅРЅРѕРіРѕ РєР»СЋС‡Р°
     BYTE* ppbKeyBlob;
     ppbKeyBlob = NULL;
     if (ppbKeyBlob = (LPBYTE)malloc(dwBlobLenght))
@@ -144,7 +144,7 @@ int cbcvr() {
         getchar();
         return -1;
     }
-    //Считываем сессионный  ключ из файла inkey.
+    //РЎС‡РёС‚С‹РІР°РµРј СЃРµСЃСЃРёРѕРЅРЅС‹Р№  РєР»СЋС‡ РёР· С„Р°Р№Р»Р° inkey.
     if (fread(ppbKeyBlob, sizeof byte, dwBlobLenght, inkey))
     {
         printf("the session key has been read to the file\n");
@@ -158,13 +158,13 @@ int cbcvr() {
 
     fclose(inkey);
 
-    //Импортируем сессионный ключ с помощью закрытого ключа ассиметричного алгоритма
+    //РРјРїРѕСЂС‚РёСЂСѓРµРј СЃРµСЃСЃРёРѕРЅРЅС‹Р№ РєР»СЋС‡ СЃ РїРѕРјРѕС‰СЊСЋ Р·Р°РєСЂС‹С‚РѕРіРѕ РєР»СЋС‡Р° Р°СЃСЃРёРјРµС‚СЂРёС‡РЅРѕРіРѕ Р°Р»РіРѕСЂРёС‚РјР°
     hSessionKey = 0;
     if (CryptImportKey(hProv, ppbKeyBlob, dwBlobLenght, hPrivateKey, 0,
         &hSessionKey))
     {
         printf(" the key has been imported.\n");
-        CryptDestroyKey(hPrivateKey); //очищаем ресурсы
+        CryptDestroyKey(hPrivateKey); //РѕС‡РёС‰Р°РµРј СЂРµСЃСѓСЂСЃС‹
         free(ppbKeyBlob);
     }
     else
@@ -175,7 +175,7 @@ int cbcvr() {
     }
 
 
-    // Устанавливаем режим шифрования сообщения CBC
+    // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЂРµР¶РёРј С€РёС„СЂРѕРІР°РЅРёСЏ СЃРѕРѕР±С‰РµРЅРёСЏ CBC
 
     DWORD dwMode = CRYPT_MODE_CBC;
     if (!CryptSetKeyParam(hSessionKey, KP_MODE, (BYTE*)&dwMode, 0))
@@ -189,7 +189,7 @@ int cbcvr() {
     BOOL      bRes;
     DWORD    datalen;
 
-    // Определяем размер буфера необходимого для блоков длины BLOCK SIZE 
+    // РћРїСЂРµРґРµР»СЏРµРј СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ РґР»СЏ Р±Р»РѕРєРѕРІ РґР»РёРЅС‹ BLOCK SIZE 
     buflen = BLOCK_SIZE;
     if (!CryptEncrypt(hSessionKey, 0, TRUE, 0, NULL, &buflen, 0))
     {
@@ -198,11 +198,11 @@ int cbcvr() {
         return -1;
     }
 
-    //Выделим память под буфер
+    //Р’С‹РґРµР»РёРј РїР°РјСЏС‚СЊ РїРѕРґ Р±СѓС„РµСЂ
     pCryptBuf = (BYTE*)malloc(buflen);
     int t = 0;
 
-    //   Шифруем файл in
+    //   РЁРёС„СЂСѓРµРј С„Р°Р№Р» in
     while ((t = fread(pCryptBuf, sizeof byte, BLOCK_SIZE, in)))
     {
         datalen = t;

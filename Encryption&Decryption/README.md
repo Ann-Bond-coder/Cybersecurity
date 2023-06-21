@@ -1,6 +1,6 @@
 # The program for encrypting and decrypting a text file.
 
-_Encryption will be done using the encryption algorithm - "Two keys 3DES" and the encryption mode - "OFB".
+_Encryption will be done using the encryption algorithm - "Two keys 3DES" and the encryption mode - "OFB".  
 Using MS CryptoAPI cryptographic interfaces._
     
          

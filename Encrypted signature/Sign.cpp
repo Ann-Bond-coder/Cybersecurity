@@ -3,7 +3,7 @@
 int sign() {
 
     /*
-    Підключення до криптопровайдера
+    РџС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ РєСЂРёРїС‚РѕРїСЂРѕРІР°Р№РґРµСЂР°
     */
     HCRYPTPROV hProv = NULL;
     LPTSTR      pszName = NULL;
@@ -19,7 +19,7 @@ int sign() {
     }
 
     /*
-    Відкриття власного сховища сертифікатів
+    Р’С–РґРєСЂРёС‚С‚СЏ РІР»Р°СЃРЅРѕРіРѕ СЃС…РѕРІРёС‰Р° СЃРµСЂС‚РёС„С–РєР°С‚С–РІ
     */
     HCERTSTORE hStoreHandle;
     HCERTSTORE hStore;
@@ -38,7 +38,7 @@ int sign() {
     }
 
     /*
-    Отримання вказівника на мій сертифікат
+    РћС‚СЂРёРјР°РЅРЅСЏ РІРєР°Р·С–РІРЅРёРєР° РЅР° РјС–Р№ СЃРµСЂС‚РёС„С–РєР°С‚
     */
     PCCERT_CONTEXT pSignerCert = 0;
     if (pSignerCert = CertFindCertificateInStore(
@@ -57,7 +57,7 @@ int sign() {
     }
 
     /*
-    Імпорт "private key" для наступної верифікації підпису або шифрування сесійного ключа
+    Р†РјРїРѕСЂС‚ "private key" РґР»СЏ РЅР°СЃС‚СѓРїРЅРѕС— РІРµСЂРёС„С–РєР°С†С–С— РїС–РґРїРёСЃСѓ Р°Р±Рѕ С€РёС„СЂСѓРІР°РЅРЅСЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
     */
     HCRYPTKEY hPrivateKey;
     DWORD keySpec = 0;  
@@ -75,7 +75,7 @@ int sign() {
     }
 
     /*
-    Вилучаємо закритий ключ
+    Р’РёР»СѓС‡Р°С”РјРѕ Р·Р°РєСЂРёС‚РёР№ РєР»СЋС‡
     */
     if (!CryptGetUserKey(hProv, keySpec, &hPrivateKey))
     {
@@ -85,7 +85,7 @@ int sign() {
     }
 
     /*
-    Зчитування файлу
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ С„Р°Р№Р»Сѓ
     */
     FILE* in, * ink;
     DWORD dwBlobLenght;
@@ -98,18 +98,18 @@ int sign() {
     fseek(in, 0, SEEK_SET);
 
     /*
-    Відкриваємо файл, вміст якого підписуємо і далі створюємо дайджест
+    Р’С–РґРєСЂРёРІР°С”РјРѕ С„Р°Р№Р», РІРјС–СЃС‚ СЏРєРѕРіРѕ РїС–РґРїРёСЃСѓС”РјРѕ С– РґР°Р»С– СЃС‚РІРѕСЂСЋС”РјРѕ РґР°Р№РґР¶РµСЃС‚
     */
     HCRYPTHASH hHash;
 
-    //створюємо хеш-об'єкт
+    //СЃС‚РІРѕСЂСЋС”РјРѕ С…РµС€-РѕР±'С”РєС‚
     if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash))
     {
         cout << "CryptCreateHash";
         return 1;
     }
 
-    //читання файла
+    //С‡РёС‚Р°РЅРЅСЏ С„Р°Р№Р»Р°
     BYTE* read = new BYTE[dwBlobLenght + 8];
     if (fread(read, sizeof byte, dwBlobLenght, in))
     {
@@ -121,7 +121,7 @@ int sign() {
         return -1;
     }
 
-    //Передача даних, що хешуються, хеш-об'єкту
+    //РџРµСЂРµРґР°С‡Р° РґР°РЅРёС…, С‰Рѕ С…РµС€СѓСЋС‚СЊСЃСЏ, С…РµС€-РѕР±'С”РєС‚Сѓ
     if (!CryptHashData(hHash, read, dwBlobLenght, 0))
     {
         cout << "CryptHashData";
@@ -129,7 +129,7 @@ int sign() {
     }
     std::cout << "Hash data loaded" << std::endl;
 
-    //Отримання хеш-значення
+    //РћС‚СЂРёРјР°РЅРЅСЏ С…РµС€-Р·РЅР°С‡РµРЅРЅСЏ
     DWORD count = 0;
     if (!CryptGetHashParam(hHash, HP_HASHVAL, NULL, &count, 0))
     {
@@ -167,7 +167,7 @@ int sign() {
     }
     std::cout << "Signature created" << std::endl;
 
-    //Запис у файл
+    //Р—Р°РїРёСЃ Сѓ С„Р°Р№Р»
     FILE* out;
     if ((out = fopen("Sign.txt", "wb")) == NULL) {
         exit(1);

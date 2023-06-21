@@ -5,9 +5,6 @@ _Encryption will be done using the encryption algorithm - "Two keys 3DES" and th
          
     
 **Encrypt.cpp** - code of encryption text file.  
-
-**Decrypt.cpp** - code of decryption text file.
-
-**Source.cpp** - startup file.
-
+**Decrypt.cpp** - code of decryption text file.  
+**Source.cpp** - startup file.  
 **Header.h** - file containing header files and function declarations.

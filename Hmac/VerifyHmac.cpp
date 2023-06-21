@@ -3,7 +3,7 @@
 int verifyHmac() {
 
     /*
-    Ініціалізація змінних
+    Р†РЅС–С†С–Р°Р»С–Р·Р°С†С–СЏ Р·РјС–РЅРЅРёС…
     */
     HCRYPTPROV  hProv = NULL;
     HCRYPTHASH  hHash = NULL;
@@ -15,7 +15,7 @@ int verifyHmac() {
     bool isVerified = true;
 
     /*
-    Підключення до криптопровайдера
+    РџС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ РєСЂРёРїС‚РѕРїСЂРѕРІР°Р№РґРµСЂР°
     */
     if (!CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, 0) &&
         !CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET))
@@ -29,7 +29,7 @@ int verifyHmac() {
     }
 
     /*
-    Зчитування секретного ключа, який створюється на основі пароля
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ СЃРµРєСЂРµС‚РЅРѕРіРѕ РєР»СЋС‡Р°, СЏРєРёР№ СЃС‚РІРѕСЂСЋС”С‚СЊСЃСЏ РЅР° РѕСЃРЅРѕРІС– РїР°СЂРѕР»СЏ
     */
     FILE* password, * verifiedHmacFile, * originTextFile;
     DWORD dwBlobLenght;
@@ -37,25 +37,25 @@ int verifyHmac() {
         exit(1);
     }
 
-    //Вихідний текст
+    //Р’РёС…С–РґРЅРёР№ С‚РµРєСЃС‚
     if ((originTextFile = fopen("Crypto.txt", "rb")) == NULL) {
         exit(1);
     }
 
-    //Згенерований Hmac
+    //Р—РіРµРЅРµСЂРѕРІР°РЅРёР№ Hmac
     if ((verifiedHmacFile = fopen("Hmac.txt", "rb")) == NULL) {
         exit(1);
     }
 
     /*
-    Навігіція по файлу
+    РќР°РІС–РіС–С†С–СЏ РїРѕ С„Р°Р№Р»Сѓ
     */
     fseek(password, 0, SEEK_END);
     dwBlobLenght = ftell(password);
     fseek(password, 0, SEEK_SET);
 
     /*
-    Зчитування файлу
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ С„Р°Р№Р»Сѓ
     */
     BYTE* read = new BYTE[dwBlobLenght];
     if (fread(read, sizeof byte, dwBlobLenght, password))
@@ -69,7 +69,7 @@ int verifyHmac() {
     }
 
     /*
-    Навігіція по файлу
+    РќР°РІС–РіС–С†С–СЏ РїРѕ С„Р°Р№Р»Сѓ
     */
     DWORD Lenght = 0;
     fseek(originTextFile, 0, SEEK_END);
@@ -77,7 +77,7 @@ int verifyHmac() {
     fseek(originTextFile, 0, SEEK_SET);
 
     /*
-    Зчитування файлу
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ С„Р°Р№Р»Сѓ
     */
     BYTE* text = new BYTE[Lenght];
     if (fread(text, sizeof byte, Lenght, originTextFile))
@@ -107,7 +107,7 @@ int verifyHmac() {
     }
 
     /*
-    Створення ключа хешування
+    РЎС‚РІРѕСЂРµРЅРЅСЏ РєР»СЋС‡Р° С…РµС€СѓРІР°РЅРЅСЏ
     */
     if (!CryptCreateHash(
         hProv,
@@ -142,17 +142,17 @@ int verifyHmac() {
         goto ErrorExit;
     }
 
-    //Закриття потоків
+    //Р—Р°РєСЂРёС‚С‚СЏ РїРѕС‚РѕРєС–РІ
     fclose(password);
 
     /*
-    Обнулення структури HMAC_INFO і використовувати алгоритм хешування MD2.
+    РћР±РЅСѓР»РµРЅРЅСЏ СЃС‚СЂСѓРєС‚СѓСЂРё HMAC_INFO С– РІРёРєРѕСЂРёСЃС‚РѕРІСѓРІР°С‚Рё Р°Р»РіРѕСЂРёС‚Рј С…РµС€СѓРІР°РЅРЅСЏ MD2.
     */
     ZeroMemory(&HmacInfo, sizeof(HmacInfo));
     HmacInfo.HashAlgid = CALG_MD2;
 
     /*
-    Створення хеш-об'єкту
+    РЎС‚РІРѕСЂРµРЅРЅСЏ С…РµС€-РѕР±'С”РєС‚Сѓ
     */
     if (!CryptCreateHash(
         hProv,
@@ -168,7 +168,7 @@ int verifyHmac() {
 
     if (!CryptSetHashParam(
         hHmacHash,
-        HP_HMAC_INFO,    //алгоритм  
+        HP_HMAC_INFO,    //Р°Р»РіРѕСЂРёС‚Рј  
         (BYTE*)&HmacInfo,
         0))
     {
@@ -179,7 +179,7 @@ int verifyHmac() {
 
     if (!CryptHashData(
         hHmacHash,
-        text,     //повідомлення
+        text,     //РїРѕРІС–РґРѕРјР»РµРЅРЅСЏ
         Lenght,
         0))
     {
@@ -189,7 +189,7 @@ int verifyHmac() {
     }
 
     /*
-    Виділення пам'яті та отримання HMAС
+    Р’РёРґС–Р»РµРЅРЅСЏ РїР°Рј'СЏС‚С– С‚Р° РѕС‚СЂРёРјР°РЅРЅСЏ HMAРЎ
     */
     if (!CryptGetHashParam(
         hHmacHash,
@@ -222,7 +222,7 @@ int verifyHmac() {
     }
 
     /*
-    Вивести хеш на консоль.
+    Р’РёРІРµСЃС‚Рё С…РµС€ РЅР° РєРѕРЅСЃРѕР»СЊ.
     */
     // Print the hash to the console.
     printf("The verify hash is:  \n");
@@ -252,7 +252,7 @@ int verifyHmac() {
     else
         printf("\nHmac has not been verified\n");
 
-    //Закриття потоків
+    //Р—Р°РєСЂРёС‚С‚СЏ РїРѕС‚РѕРєС–РІ
     fclose(originTextFile);
     fclose(verifiedHmacFile);
 

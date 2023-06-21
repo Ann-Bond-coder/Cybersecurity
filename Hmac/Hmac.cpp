@@ -3,7 +3,7 @@
 int hmac() {
 
     /*
-    Ініціалізація змінних
+    Р†РЅС–С†С–Р°Р»С–Р·Р°С†С–СЏ Р·РјС–РЅРЅРёС…
     */
     HCRYPTPROV  hProv = NULL;
     HCRYPTHASH  hHash = NULL;
@@ -14,7 +14,7 @@ int hmac() {
     HMAC_INFO   HmacInfo;
 
     /*
-    Підключення до криптопровайдера
+    РџС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ РєСЂРёРїС‚РѕРїСЂРѕРІР°Р№РґРµСЂР°
     */
     if (!CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, 0) &&
         !CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET))
@@ -28,7 +28,7 @@ int hmac() {
     }
 
     /*
-    Зчитування секретного ключа, який створюється на основі пароля
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ СЃРµРєСЂРµС‚РЅРѕРіРѕ РєР»СЋС‡Р°, СЏРєРёР№ СЃС‚РІРѕСЂСЋС”С‚СЊСЃСЏ РЅР° РѕСЃРЅРѕРІС– РїР°СЂРѕР»СЏ
     */
     FILE* password, * out, * in;
     DWORD dwBlobLenght;
@@ -36,25 +36,25 @@ int hmac() {
         exit(1);
     }
 
-    //Вихідний текст
+    //Р’РёС…С–РґРЅРёР№ С‚РµРєСЃС‚
     if ((in = fopen("Crypto.txt", "rb")) == NULL) {
         exit(1);
     }
 
-    //Згенерований Hmac
+    //Р—РіРµРЅРµСЂРѕРІР°РЅРёР№ Hmac
     if ((out = fopen("Hmac.txt", "wb")) == NULL) {
         exit(1);
     }
 
     /*
-    Навігіція по файлу
+    РќР°РІС–РіС–С†С–СЏ РїРѕ С„Р°Р№Р»Сѓ
     */
     fseek(password, 0, SEEK_END);
     dwBlobLenght = ftell(password);
     fseek(password, 0, SEEK_SET);
 
     /*
-    Зчитування файлу
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ С„Р°Р№Р»Сѓ
     */
     BYTE* read = new BYTE[dwBlobLenght];
     if (fread(read, sizeof byte, dwBlobLenght, password))
@@ -68,7 +68,7 @@ int hmac() {
     }
 
     /*
-    Навігіція по файлу
+    РќР°РІС–РіС–С†С–СЏ РїРѕ С„Р°Р№Р»Сѓ
     */
     DWORD Lenght = 0;
     fseek(in, 0, SEEK_END);
@@ -76,7 +76,7 @@ int hmac() {
     fseek(in, 0, SEEK_SET);
 
     /*
-    Зчитування файлу
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ С„Р°Р№Р»Сѓ
     */
     BYTE* text = new BYTE[Lenght];
     if (fread(text, sizeof byte, Lenght, in))
@@ -90,7 +90,7 @@ int hmac() {
     }
 
     /*
-    Створення ключа хешування
+    РЎС‚РІРѕСЂРµРЅРЅСЏ РєР»СЋС‡Р° С…РµС€СѓРІР°РЅРЅСЏ
     */
     if (!CryptCreateHash(
         hProv,
@@ -125,17 +125,17 @@ int hmac() {
         goto ErrorExit;
     }
 
-    //Закриття потоків
+    //Р—Р°РєСЂРёС‚С‚СЏ РїРѕС‚РѕРєС–РІ
     fclose(password);
 
     /*
-    Обнулення структури HMAC_INFO і використовувати алгоритм хешування MD2.
+    РћР±РЅСѓР»РµРЅРЅСЏ СЃС‚СЂСѓРєС‚СѓСЂРё HMAC_INFO С– РІРёРєРѕСЂРёСЃС‚РѕРІСѓРІР°С‚Рё Р°Р»РіРѕСЂРёС‚Рј С…РµС€СѓРІР°РЅРЅСЏ MD2.
     */
     ZeroMemory(&HmacInfo, sizeof(HmacInfo));
     HmacInfo.HashAlgid = CALG_MD2;
     
     /*
-    Створення хеш-об'єкту
+    РЎС‚РІРѕСЂРµРЅРЅСЏ С…РµС€-РѕР±'С”РєС‚Сѓ
     */
     if (!CryptCreateHash(
         hProv,
@@ -151,7 +151,7 @@ int hmac() {
 
     if (!CryptSetHashParam(
         hHmacHash,
-        HP_HMAC_INFO,    //алгоритм  
+        HP_HMAC_INFO,    //Р°Р»РіРѕСЂРёС‚Рј  
         (BYTE*)&HmacInfo,
         0))
     {
@@ -162,7 +162,7 @@ int hmac() {
 
     if (!CryptHashData(
         hHmacHash,
-        text,     //повідомлення
+        text,     //РїРѕРІС–РґРѕРјР»РµРЅРЅСЏ
         Lenght,
         0))
     {
@@ -172,7 +172,7 @@ int hmac() {
     }
     
     /*
-    Виділення пам'яті та отримання HMAС
+    Р’РёРґС–Р»РµРЅРЅСЏ РїР°Рј'СЏС‚С– С‚Р° РѕС‚СЂРёРјР°РЅРЅСЏ HMAРЎ
     */
     if (!CryptGetHashParam(
         hHmacHash,
@@ -205,7 +205,7 @@ int hmac() {
     }
 
     /*
-    Вивести хеш на консоль.
+    Р’РёРІРµСЃС‚Рё С…РµС€ РЅР° РєРѕРЅСЃРѕР»СЊ.
     */
     printf("The hash is:  ");
     for (DWORD i = 0; i < dwDataLen; i++)
@@ -216,7 +216,7 @@ int hmac() {
     fwrite(pbHash, sizeof byte, dwDataLen, out);
     printf("\n");
 
-    //Закриття потоків
+    //Р—Р°РєСЂРёС‚С‚СЏ РїРѕС‚РѕРєС–РІ
     fclose(in);
     fclose(out);
 

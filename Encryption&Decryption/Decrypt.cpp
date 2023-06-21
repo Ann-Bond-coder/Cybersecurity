@@ -3,7 +3,7 @@
 int decrypt() {
 
     /*
-    Підключення до криптопровайдера
+    РџС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ РєСЂРёРїС‚РѕРїСЂРѕРІР°Р№РґРµСЂР°
     */
     HCRYPTPROV hProv = NULL;
     if (!CryptAcquireContextW(&hProv, NULL, 0, PROV_RSA_FULL, 0) &&
@@ -18,7 +18,7 @@ int decrypt() {
     }
 
     /*
-    Відкриття власного сховища сертифікатів
+    Р’С–РґРєСЂРёС‚С‚СЏ РІР»Р°СЃРЅРѕРіРѕ СЃС…РѕРІРёС‰Р° СЃРµСЂС‚РёС„С–РєР°С‚С–РІ
     */
     HCERTSTORE hStoreHandle;
     HCERTSTORE hStore;
@@ -29,11 +29,11 @@ int decrypt() {
         CERT_SYSTEM_STORE_CURRENT_USER,
         CERT_STORE_NAME)))
     {
-        printf("Неможливо відкрити сзовище MY!");
+        printf("РќРµРјРѕР¶Р»РёРІРѕ РІС–РґРєСЂРёС‚Рё СЃР·РѕРІРёС‰Рµ MY!");
     }
 
     /*
-    Отримання вказівника на мій сертифікат
+    РћС‚СЂРёРјР°РЅРЅСЏ РІРєР°Р·С–РІРЅРёРєР° РЅР° РјС–Р№ СЃРµСЂС‚РёС„С–РєР°С‚
     */
     PCCERT_CONTEXT pSignerCert = 0;
     if (pSignerCert = CertFindCertificateInStore(
@@ -52,7 +52,7 @@ int decrypt() {
     }
 
     /*
-    Вилучаю із сертифіката контекст приватного ключа
+    Р’РёР»СѓС‡Р°СЋ С–Р· СЃРµСЂС‚РёС„С–РєР°С‚Р° РєРѕРЅС‚РµРєСЃС‚ РїСЂРёРІР°С‚РЅРѕРіРѕ РєР»СЋС‡Р°
     */
     HCRYPTKEY hPrivateKey;
     DWORD keySpec = 0;
@@ -70,7 +70,7 @@ int decrypt() {
     }
 
     /*
-    Вилучаю закритий ключ
+    Р’РёР»СѓС‡Р°СЋ Р·Р°РєСЂРёС‚РёР№ РєР»СЋС‡
     */
     if (!CryptGetUserKey(hProv, keySpec, &hPrivateKey))
     {
@@ -80,7 +80,7 @@ int decrypt() {
     }
 
     /*
-    Зчитування записаного ключа
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ Р·Р°РїРёСЃР°РЅРѕРіРѕ РєР»СЋС‡Р°
     */
     FILE* in, * inkey, * key_lenght, * encrypted;
     DWORD dwBlobLenght;
@@ -95,7 +95,7 @@ int decrypt() {
     fclose(key_lenght);
 
     /*
-    Розподіляємо пам'ять для сесійного ключа
+    Р РѕР·РїРѕРґС–Р»СЏС”РјРѕ РїР°Рј'СЏС‚СЊ РґР»СЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
     */
     BYTE* ppbKeyBlob;
     ppbKeyBlob = NULL;
@@ -111,7 +111,7 @@ int decrypt() {
     }
     
     /*
-    Зчитуємо сесійний ключ із файлу in
+    Р—С‡РёС‚СѓС”РјРѕ СЃРµСЃС–Р№РЅРёР№ РєР»СЋС‡ С–Р· С„Р°Р№Р»Сѓ in
     */
     if (fread(ppbKeyBlob, sizeof byte, dwBlobLenght, inkey))
     {
@@ -125,14 +125,14 @@ int decrypt() {
     }
 
     /*
-    Імпортуємо сесійний ключ за допомогою закритого ключа асиметричного алгоритму
+    Р†РјРїРѕСЂС‚СѓС”РјРѕ СЃРµСЃС–Р№РЅРёР№ РєР»СЋС‡ Р·Р° РґРѕРїРѕРјРѕРіРѕСЋ Р·Р°РєСЂРёС‚РѕРіРѕ РєР»СЋС‡Р° Р°СЃРёРјРµС‚СЂРёС‡РЅРѕРіРѕ Р°Р»РіРѕСЂРёС‚РјСѓ
     */
     HCRYPTKEY hSessionKey;
     if (CryptImportKey(hProv, ppbKeyBlob, dwBlobLenght, hPrivateKey, 0,
         &hSessionKey))
     {
         printf(" the key has been imported.\n");
-        CryptDestroyKey(hPrivateKey); //очищаем ресурсы
+        CryptDestroyKey(hPrivateKey); //РѕС‡РёС‰Р°РµРј СЂРµСЃСѓСЂСЃС‹
         free(ppbKeyBlob);
     }
     else
@@ -142,11 +142,11 @@ int decrypt() {
         return 1;
     }
 
-    //закриття потоку
+    //Р·Р°РєСЂРёС‚С‚СЏ РїРѕС‚РѕРєСѓ
     fclose(inkey);
 
     /*
-    Зчитування та запис повідомлення
+    Р—С‡РёС‚СѓРІР°РЅРЅСЏ С‚Р° Р·Р°РїРёСЃ РїРѕРІС–РґРѕРјР»РµРЅРЅСЏ
     */
     if ((encrypted = fopen("text_encrypted.txt", "rb")) == NULL) {
         exit(1);
@@ -156,7 +156,7 @@ int decrypt() {
     }
 
     /*
-    Визначаємо розмір необхідного буфера
+    Р’РёР·РЅР°С‡Р°С”РјРѕ СЂРѕР·РјС–СЂ РЅРµРѕР±С…С–РґРЅРѕРіРѕ Р±СѓС„РµСЂР°
     */
     DWORD buflen = BLOCK_SIZE;
     BOOL bRes = CryptEncrypt(hSessionKey, 0, TRUE, 0, NULL, &buflen, 0);
@@ -164,7 +164,7 @@ int decrypt() {
     int t = 0;
 
     /*
-    Розшифровуємо файл
+    Р РѕР·С€РёС„СЂРѕРІСѓС”РјРѕ С„Р°Р№Р»
     */
     while ((t = fread(pCryptBuf, sizeof byte, buflen, encrypted)))
     {
@@ -180,11 +180,11 @@ int decrypt() {
     }
     cout << "File decryption completed successfully" << endl;
 
-    // Закриття потоків
+    // Р—Р°РєСЂРёС‚С‚СЏ РїРѕС‚РѕРєС–РІ
     fclose(in);
     fclose(encrypted);
 
-    // Звільнення контексту локальних змінних
+    // Р—РІС–Р»СЊРЅРµРЅРЅСЏ РєРѕРЅС‚РµРєСЃС‚Сѓ Р»РѕРєР°Р»СЊРЅРёС… Р·РјС–РЅРЅРёС…
     CryptDestroyKey(hSessionKey);
     CryptReleaseContext(hProv, 0);
 

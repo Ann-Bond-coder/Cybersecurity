@@ -17,20 +17,14 @@ using namespace std;
 
 #define MY_TYPE  (PKCS_7_ASN_ENCODING | X509_ASN_ENCODING)
 
-// Наименование персонального хранилища
+// РќР°РёРјРµРЅРѕРІР°РЅРёРµ РїРµСЂСЃРѕРЅР°Р»СЊРЅРѕРіРѕ С…СЂР°РЅРёР»РёС‰Р°
 #define CERT_STORE_NAME  L"MY"
 
-// Наименование сертификата, установленного в это хранилище
+// РќР°РёРјРµРЅРѕРІР°РЅРёРµ СЃРµСЂС‚РёС„РёРєР°С‚Р°, СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕРіРѕ РІ СЌС‚Рѕ С…СЂР°РЅРёР»РёС‰Рµ
 #define SIGNER_NAME  L"Bank_Odesa.com"
 
 #define KEYLENGTH  0x00800000
 #define BLOCK_SIZE 20 
 
-int encrypt();
-int decrypt();
-int sign();
-int verify();
 int hmac();
 int verifyHmac();
-int cbcvr();
-int mac_cbc();

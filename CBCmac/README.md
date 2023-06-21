@@ -1,6 +1,7 @@
 # Creation of the MAC-CBC algorithm
 
-_Implement message authentication based on the MAC-CBC algorithm using CryptoAPI._
+_Implement message authentication based on the MAC-CBC algorithm using CryptoAPI.  
+The algorithm - "Two keys 3DES"_
 
 
 **MACcbc.cpp** - the code of implementation the MAC-CBC algorithm.  

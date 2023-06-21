@@ -3,7 +3,7 @@
 int encrypt() {
 
 	/*
-	Підключення до криптопровайдера
+	РџС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ РєСЂРёРїС‚РѕРїСЂРѕРІР°Р№РґРµСЂР°
 	*/
 	HCRYPTPROV hProv = NULL;
 	LPTSTR      pszName = NULL;
@@ -19,7 +19,7 @@ int encrypt() {
 	}
 
 	/*
-	Відкриття власного сховища сертифікатів
+	Р’С–РґРєСЂРёС‚С‚СЏ РІР»Р°СЃРЅРѕРіРѕ СЃС…РѕРІРёС‰Р° СЃРµСЂС‚РёС„С–РєР°С‚С–РІ
 	*/
 	HCERTSTORE hStore;
 	HCERTSTORE hStoreHandle;
@@ -28,15 +28,15 @@ int encrypt() {
 		0,
 		NULL,
 		CERT_SYSTEM_STORE_CURRENT_USER,
-		//CERT_SYSTEM_STORE_LOCAL_MACHINE, //якщо на локальній машині
+		//CERT_SYSTEM_STORE_LOCAL_MACHINE, //СЏРєС‰Рѕ РЅР° Р»РѕРєР°Р»СЊРЅС–Р№ РјР°С€РёРЅС–
 		CERT_STORE_NAME)))
 	{
-		printf("Неможливо відкрити сховище MY!");
+		printf("РќРµРјРѕР¶Р»РёРІРѕ РІС–РґРєСЂРёС‚Рё СЃС…РѕРІРёС‰Рµ MY!");
 
 	}
 
 	/*
-	Отримання вказівника на мій сертифікат
+	РћС‚СЂРёРјР°РЅРЅСЏ РІРєР°Р·С–РІРЅРёРєР° РЅР° РјС–Р№ СЃРµСЂС‚РёС„С–РєР°С‚
 	*/
 	PCCERT_CONTEXT pSignerCert = 0;
 	if (pSignerCert = CertFindCertificateInStore(
@@ -55,7 +55,7 @@ int encrypt() {
 	}
 	
 	/*
-	Імпорт "public key" для наступної верифікації підпису або шифрування сесійного ключа
+	Р†РјРїРѕСЂС‚ "public key" РґР»СЏ РЅР°СЃС‚СѓРїРЅРѕС— РІРµСЂРёС„С–РєР°С†С–С— РїС–РґРїРёСЃСѓ Р°Р±Рѕ С€РёС„СЂСѓРІР°РЅРЅСЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
 	*/
 	HCRYPTKEY hPublicKey;
 	if (CryptImportPublicKeyInfo(
@@ -73,7 +73,7 @@ int encrypt() {
 
 
 	/*
-	Генерація сесійного ключа. Мій ключ - Two keys 3DES OFB 
+	Р“РµРЅРµСЂР°С†С–СЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°. РњС–Р№ РєР»СЋС‡ - Two keys 3DES OFB 
 	*/
 	HCRYPTKEY hSessionKey;
 	if (!CryptGenKey(hProv, CALG_3DES_112,
@@ -86,7 +86,7 @@ int encrypt() {
 	std::cout << "Session key generated" << std::endl;
 
 	/*
-	Встановлення режиму шифрування повідомлення - OFB
+	Р’СЃС‚Р°РЅРѕРІР»РµРЅРЅСЏ СЂРµР¶РёРјСѓ С€РёС„СЂСѓРІР°РЅРЅСЏ РїРѕРІС–РґРѕРјР»РµРЅРЅСЏ - OFB
 	*/
 	DWORD dwMode = CRYPT_MODE_CFB;
 	if (!CryptSetKeyParam(hSessionKey, KP_MODE, (BYTE*)&dwMode, 0))
@@ -96,7 +96,7 @@ int encrypt() {
 	}
 
 	/*
-	Зчитування файлу та запис в інший
+	Р—С‡РёС‚СѓРІР°РЅРЅСЏ С„Р°Р№Р»Сѓ С‚Р° Р·Р°РїРёСЃ РІ С–РЅС€РёР№
 	*/
 	FILE* in, * inkey, * key_lenght, * encrypted;
 	if ((in = fopen("Crypto.txt", "rb")) == NULL) {
@@ -112,7 +112,7 @@ int encrypt() {
 	DWORD    datalen;
 
 	/*
-	Визначення розміра необхідного буфера
+	Р’РёР·РЅР°С‡РµРЅРЅСЏ СЂРѕР·РјС–СЂР° РЅРµРѕР±С…С–РґРЅРѕРіРѕ Р±СѓС„РµСЂР°
 	*/
 	buflen = BLOCK_SIZE;
 	if (!CryptEncrypt(hSessionKey, 0, TRUE, 0, NULL, &buflen, 0))
@@ -123,13 +123,13 @@ int encrypt() {
 	}
 
 	/*
-	Видідення пам'яті під буфер
+	Р’РёРґС–РґРµРЅРЅСЏ РїР°Рј'СЏС‚С– РїС–Рґ Р±СѓС„РµСЂ
 	*/
 	pCryptBuf = (BYTE*)malloc(buflen);
 	int t = 0;
 
 	/*
-	Шифрування фійлу "in"
+	РЁРёС„СЂСѓРІР°РЅРЅСЏ С„С–Р№Р»Сѓ "in"
 	*/
 	while ((t = fread(pCryptBuf, sizeof byte, BLOCK_SIZE, in)))
 	{
@@ -144,10 +144,10 @@ int encrypt() {
 	}
 	cout << "File encryption completed successfully" << endl;
 
-	//Закриття потоків
+	//Р—Р°РєСЂРёС‚С‚СЏ РїРѕС‚РѕРєС–РІ
 	fclose(in);
 	fclose(encrypted);
-	//Очистка буфера
+	//РћС‡РёСЃС‚РєР° Р±СѓС„РµСЂР°
 	free(pCryptBuf);
 
 	if ((inkey = fopen("text_inKey.txt", "wb")) == NULL) {
@@ -156,7 +156,7 @@ int encrypt() {
 	DWORD dwBlobLenght = 0;
 
 	/*
-	Визначення розміру сесійного ключа
+	Р’РёР·РЅР°С‡РµРЅРЅСЏ СЂРѕР·РјС–СЂСѓ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
 	*/
 	if (CryptExportKey(hSessionKey, hPublicKey, SIMPLEBLOB, 0, 0, &dwBlobLenght))
 	{
@@ -170,7 +170,7 @@ int encrypt() {
 	}
 	
 	/*
-	Розподіляємо пам'ять для сесійного ключа
+	Р РѕР·РїРѕРґС–Р»СЏС”РјРѕ РїР°Рј'СЏС‚СЊ РґР»СЏ СЃРµСЃС–Р№РЅРѕРіРѕ РєР»СЋС‡Р°
 	*/
 	BYTE* ppbKeyBlob;
 	ppbKeyBlob = NULL;
@@ -186,9 +186,9 @@ int encrypt() {
 	}
 
 	/*
-	Запис довжини ключа "hSessionKey" в новий файл - функція
+	Р—Р°РїРёСЃ РґРѕРІР¶РёРЅРё РєР»СЋС‡Р° "hSessionKey" РІ РЅРѕРІРёР№ С„Р°Р№Р» - С„СѓРЅРєС†С–СЏ
 	*/
-	if ((key_lenght = fopen("key_length.txt", "w")) == NULL) {//b-побитово
+	if ((key_lenght = fopen("key_length.txt", "w")) == NULL) {//b-РїРѕР±РёС‚РѕРІРѕ
 		puts("Cannot open file key.");
 		exit(1);
 	}
@@ -196,7 +196,7 @@ int encrypt() {
 	fclose(key_lenght);
 
 	/*
-	Зашифруємо сесійний ключ hKey відкритим ключем hPublicKey
+	Р—Р°С€РёС„СЂСѓС”РјРѕ СЃРµСЃС–Р№РЅРёР№ РєР»СЋС‡ hKey РІС–РґРєСЂРёС‚РёРј РєР»СЋС‡РµРј hPublicKey
 	*/
 	if (CryptExportKey(hSessionKey, hPublicKey, SIMPLEBLOB, 0, ppbKeyBlob, &dwBlobLenght))
 	{
@@ -212,7 +212,7 @@ int encrypt() {
 	}
 
 	/*
-	Записуємо експортований ключ у файл out.
+	Р—Р°РїРёСЃСѓС”РјРѕ РµРєСЃРїРѕСЂС‚РѕРІР°РЅРёР№ РєР»СЋС‡ Сѓ С„Р°Р№Р» out.
 	*/
 	if (fwrite(ppbKeyBlob, sizeof byte, dwBlobLenght, inkey))
 	{
@@ -229,12 +229,12 @@ int encrypt() {
 	fclose(inkey);
 
 	/*
-	Звільнення контексту локальних змінних
+	Р—РІС–Р»СЊРЅРµРЅРЅСЏ РєРѕРЅС‚РµРєСЃС‚Сѓ Р»РѕРєР°Р»СЊРЅРёС… Р·РјС–РЅРЅРёС…
 	*/
 	CryptDestroyKey(hSessionKey);
 	CryptReleaseContext(hProv, 0);
 
-	// Для зупинки
+	// Р”Р»СЏ Р·СѓРїРёРЅРєРё
 	_getch();
 
 	return 0;
